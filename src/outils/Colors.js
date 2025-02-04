@@ -6,4 +6,5 @@ export default {
     vert5: '#026228',
     vert6: '#00623B',
     gris: '#F4F4F4',
+    grisclair : '#ccc', 
   };
