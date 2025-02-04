@@ -1,30 +1,27 @@
 import React, { useState } from 'react';
-import { View, Text, Button, Image, StyleSheet } from 'react-native';
+import { View, Text, Button, Image, StyleSheet, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
-const OpenGalery = () => {
+const OpenGallery = () => {
   const [selectedImage, setSelectedImage] = useState(null);
 
   const pickImage = async () => {
     // Demande de permission d'accès à la galerie
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      alert('Permission required to access the gallery.');
+      Alert.alert('Permission Denied', 'Permission required to access the gallery.');
       return;
     }
 
     // Ouverture de la galerie pour sélectionner une image
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaType.Images,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, // Correction de l'option
       allowsEditing: true,
       quality: 1,
     });
 
-    if (result.canceled) {
-      alert('No image was selected.');
-    } else {
-      // Mise à jour du state pour afficher l'image sélectionnée
-      setSelectedImage(result.assets[0]);
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0]); // Utilisation correcte de la réponse
     }
   };
 
@@ -41,17 +38,17 @@ const OpenGalery = () => {
   );
 };
 
-export default OpenGalery;
+export default OpenGallery;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 50,
   },
   image: {
-    width: 600,
-    height: 600,
+    width: 300,
+    height: 300,
     borderRadius: 10,
     marginBottom: 20,
   },

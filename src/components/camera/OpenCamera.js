@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Button } from 'react-native';
 import { Camera } from 'expo-camera';
 
 const OpenCamera = () => {
@@ -35,8 +35,8 @@ const OpenCamera = () => {
               style={styles.captureButton}
               onPress={async () => {
                 if (cameraRef) {
-                  const photo = await cameraRef.takePictureAsync();
-                  setPhoto(photo);
+                  const photoData = await cameraRef.takePictureAsync();
+                  setPhoto(photoData);
                 }
               }}
             />
@@ -46,8 +46,6 @@ const OpenCamera = () => {
     </View>
   );
 };
-
-export default OpenCamera;
 
 const styles = StyleSheet.create({
   container: {
@@ -77,3 +75,5 @@ const styles = StyleSheet.create({
     height: '70%',
   },
 });
+
+export default OpenCamera;

@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, TouchableOpacity, Modal, Image } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, Modal, Image, Alert } from 'react-native';
 import React, { useState } from 'react';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Colors from '../../outils/Colors';
@@ -6,28 +6,53 @@ import OpenCamera from './OpenCamera';
 import * as ImagePicker from 'expo-image-picker';
 
 const CameraOption = () => {
-  const [showCamera, setShowCamera] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaType.Images,
+  const pickImageFromGallery = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'Permission required to access the gallery.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
     });
 
-    if (!result.cancelled) {
-      setSelectedImage(result.uri);
+    if (!result.canceled && result.assets.length > 0) {
+      setSelectedImage(result.assets[0].uri);
       setShowGallery(true);
+    }
+  };
+
+  const openCamera = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'Permission required to access the camera.');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets.length > 0) {
+      setSelectedImage(result.assets[0].uri);
+      setShowCamera(false); // Ferme la caméra après la capture
     }
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <TouchableOpacity style={styles.optionButton} onPress={pickImage}>
+        <TouchableOpacity style={styles.optionButton} onPress={pickImageFromGallery}>
           <View style={styles.iconContainer}>
             <MaterialIcons name="insert-photo" size={40} color="white" />
           </View>
@@ -46,10 +71,18 @@ const CameraOption = () => {
             {selectedImage ? (
               <Image source={{ uri: selectedImage }} style={styles.imagePreview} />
             ) : null}
-            <TouchableOpacity onPress={() => setShowGallery(false)} style={styles.iconCancelContainer}>
-              <MaterialIcons name="cancel" color={Colors.vert1} size={40} />
-            </TouchableOpacity>
           </View>
+          
+          {/* Positionner le bouton "cancel" en dehors de l'image */}
+          <TouchableOpacity onPress={() => setShowGallery(false)} style={styles.iconCancelContainer}>
+            <MaterialIcons name="cancel" color={Colors.vert1} size={40} />
+          </TouchableOpacity>
+
+          {/* Add the search button below the image */}
+          <TouchableOpacity style={styles.searchButton}>
+            <Text style={styles.labelSearch}>Research this plant</Text>
+            <MaterialIcons name="search" color="white" size={30} />
+          </TouchableOpacity>
         </View>
       </Modal>
 
@@ -57,10 +90,12 @@ const CameraOption = () => {
         <View style={styles.modalBackground}>
           <View style={styles.modalContainer}>
             <OpenCamera />
-            <TouchableOpacity onPress={() => setShowCamera(false)} style={styles.iconCancelContainer}>
-              <MaterialIcons name="cancel" color={Colors.vert1} size={40} />
-            </TouchableOpacity>
           </View>
+          
+          {/* Bouton "cancel" à l'extérieur de la caméra */}
+          <TouchableOpacity onPress={() => setShowCamera(false)} style={styles.iconCancelContainer}>
+            <MaterialIcons name="cancel" color={Colors.vert1} size={40} />
+          </TouchableOpacity>
         </View>
       </Modal>
     </View>
@@ -107,7 +142,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'white',
   },
   modalContainer: {
     backgroundColor: 'white',
@@ -131,5 +166,20 @@ const styles = StyleSheet.create({
     height: 400,
     borderRadius: 10,
     marginBottom: 20,
+  },
+  searchButton: {
+    marginTop: 20,
+    backgroundColor: Colors.vert1,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  labelSearch: {
+    fontWeight: 'bold',
+    color: 'white',
+    marginRight: 10,
   },
 });

@@ -1,12 +1,33 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import * as ImagePicker from 'expo-image-picker';
 
 import Colors from '../../outils/Colors';
 
 const EditProfil = ({ goBack }) => {
   const [selectedGender, setSelectedGender] = useState(null);
+  const [profileImage, setProfileImage] = useState(null); // Ajoutez un state pour gérer l'image
+
+  // Fonction pour ouvrir la galerie
+  const openGallery = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'Permission required to access the gallery.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets.length > 0) {
+      setProfileImage(result.assets[0].uri); // Mettre l'URI de l'image dans le state
+    }
+  };
 
   const handleGenderSelection = (gender) => {
     setSelectedGender(gender);
@@ -24,8 +45,12 @@ const EditProfil = ({ goBack }) => {
 
       {/* Section Photo de profil */}
       <View style={styles.photoSection}>
-        <TouchableOpacity style={styles.photoContainer}>
-          <Icon name="camera" size={30} color="white" />
+        <TouchableOpacity style={styles.photoContainer} onPress={openGallery}>
+          {profileImage ? (
+            <Image source={{ uri: profileImage }} style={styles.profileImage} />
+          ) : (
+            <Icon name="camera" size={30} color="white" />
+          )}
         </TouchableOpacity>
       </View>
 
@@ -39,8 +64,6 @@ const EditProfil = ({ goBack }) => {
           </View>
         </View>
 
-        
-
         {/* Email */}
         <View style={styles.Viewinput}>
           <View style={styles.inputContainer}>
@@ -48,7 +71,6 @@ const EditProfil = ({ goBack }) => {
             <TextInput placeholder="Email" keyboardType="email-address" style={styles.input} />
           </View>
         </View>
-
 
         {/* Prénom */}
         <View style={styles.Viewinput}>
@@ -60,28 +82,21 @@ const EditProfil = ({ goBack }) => {
 
         {/* Section Genre avec Boutons */}
         <View style={styles.Viewinput}>
-          {/*<Text style={styles.label}>Gender</Text>*/}
           <View style={styles.genderContainer}>
             <TouchableOpacity
-              style={[
-                styles.genderButton,
-                selectedGender === 'male' && styles.selectedButton,
-              ]}
+              style={[styles.genderButton, selectedGender === 'male' && styles.selectedButton]}
               onPress={() => handleGenderSelection('male')}
             >
-              <MaterialIcons name="male" size={20} color={selectedGender === 'male' ? Colors.vert : Colors.grisclair } />
+              <MaterialIcons name="male" size={20} color={selectedGender === 'male' ? Colors.vert : Colors.grisclair} />
               <Text style={styles.genderText}>Homme</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                styles.genderButton,
-                selectedGender === 'female' && styles.selectedButton,
-              ]}
+              style={[styles.genderButton, selectedGender === 'female' && styles.selectedButton]}
               onPress={() => handleGenderSelection('female')}
             >
               <MaterialIcons name="female" size={20} color={selectedGender === 'female' ? Colors.vert : Colors.grisclair} />
-              <Text color={selectedGender === 'female' ? Colors.vert : Colors.grisclair}>Femme</Text>
+              <Text style={styles.genderText}>Femme</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -131,16 +146,16 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: 'white',
   },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 60,
+  },
   formSection: {
     width: '100%',
   },
   Viewinput: {
     marginBottom: 15,
-  },
-  label: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 10,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -169,10 +184,8 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     width: '45%',
     justifyContent: 'center',
-    marginHorizontal: 5,
   },
   selectedButton: {
-    //backgroundColor: Colors.vert1,
     borderColor: Colors.vert1,
   },
   genderText: {
