@@ -44,7 +44,7 @@ const EditProfil = ({ goBack }) => {
         {/* Email */}
         <View style={styles.Viewinput}>
           <View style={styles.inputContainer}>
-            <Icon name="envelope" size={20} color={Colors.vert1} />
+            <Icon name="envelope" size={16} color={Colors.vert1} />
             <TextInput placeholder="Email" keyboardType="email-address" style={styles.input} />
           </View>
         </View>
@@ -60,7 +60,7 @@ const EditProfil = ({ goBack }) => {
 
         {/* Section Genre avec Boutons */}
         <View style={styles.Viewinput}>
-          <Text style={styles.label}>Genre</Text>
+          {/*<Text style={styles.label}>Gender</Text>*/}
           <View style={styles.genderContainer}>
             <TouchableOpacity
               style={[
@@ -90,7 +90,7 @@ const EditProfil = ({ goBack }) => {
       {/* Bouton Valider */}
       <View style={styles.footer}>
         <TouchableOpacity style={styles.buttonOK}>
-          <Text style={styles.buttonText}>Valider</Text>
+          <Text style={styles.buttonText}>Valid</Text>
           <MaterialIcons name="edit" size={20} color="white" style={styles.iconSpacing} />
         </TouchableOpacity>
       </View>
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    paddingLeft: 10,
+    paddingLeft: 20,
   },
   genderContainer: {
     flexDirection: 'row',

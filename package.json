@@ -34,7 +34,8 @@
     "react-native-stack": "^1.0.0-alpha11",
     "react-native-status-bar-height": "^2.6.0",
     "react-native-vector-icons": "^10.2.0",
-    "yup": "^1.6.1"
+    "yup": "^1.6.1",
+    "expo-image-picker": "~16.0.5"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
