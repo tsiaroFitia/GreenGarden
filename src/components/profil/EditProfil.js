@@ -1,43 +1,44 @@
 import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome'; // Icône de la caméra
+import Icon from 'react-native-vector-icons/FontAwesome';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+
+import Colors from '../../outils/Colors';
+import GenreDropdown from './GenreDropdown';
 
 const EditProfil = ({ goBack }) => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Section pour la photo de profil */}
-      <View style={styles.photoContainerWrapper}>
+      {/* En-tête du modal */}
+      <View style={styles.header}>
+        
+        <Text style={styles.title}>Profil</Text>
+        <TouchableOpacity onPress={goBack}>
+          <Icon name="times" size={30} color={Colors.vert5} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Section Photo de profil */}
+      <View style={styles.photoSection}>
         <TouchableOpacity style={styles.photoContainer}>
-          {/* Icône de la caméra */}
           <Icon name="camera" size={30} color="white" />
         </TouchableOpacity>
       </View>
 
-      {/* Formulaire */}
-      <View style={styles.formContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Nom"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Prénom"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          keyboardType="email-address"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Genre"
-        />
+      {/* Formulaire d'édition */}
+      <View style={styles.formSection}>
+        <TextInput style={styles.input} placeholder="Nom" />
+        <TextInput style={styles.input} placeholder="Prénom" />
+        <TextInput style={styles.input} placeholder="Email" keyboardType="email-address" />
+        <GenreDropdown style={styles.input} />
         
-        {/* Autres champs peuvent être ajoutés ici */}
+      </View>
 
-        {/* Bouton de retour */}
-        <TouchableOpacity onPress={goBack} style={styles.button}>
-          <Text style={styles.buttonText}>Retour</Text>
+      {/* Bouton Valider */}
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.buttonOK}>
+          <Text style={styles.buttonText}>Valider</Text>
+          <MaterialIcon name="edit" size={20} color="white" style={styles.iconSpacing} />
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -47,46 +48,71 @@ const EditProfil = ({ goBack }) => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: '100%',
+    backgroundColor: 'white',
+    borderRadius: 20,
     padding: 20,
   },
-  photoContainerWrapper: {
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: Colors.vert5,
+  },
+  photoSection: {
     alignItems: 'center',
     marginBottom: 30,
   },
   photoContainer: {
     width: 120,
     height: 120,
-    backgroundColor: '#4CAF50', // Couleur du cercle
-    borderRadius: 60, // Cercle parfait
+    backgroundColor: Colors.vert1,
+    borderRadius: 60,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
-    borderColor: 'white', // Bordure blanche autour du cercle
+    borderColor: 'white',
   },
-  formContainer: {
+  formSection: {
     width: '100%',
   },
   input: {
-    height: 50,
+    height: 43,
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 10,
     marginBottom: 15,
     paddingHorizontal: 10,
   },
-  button: {
-    width: '100%',
+  iconSpacing: {
+    marginLeft: 15,
+  },
+  footer: {
+    alignItems: 'flex-end',
+    marginTop: 20,
+  },
+  buttonOK: {
+    backgroundColor: Colors.vert1,
+    borderRadius: 13,
+    width: '45%',
     height: 50,
-    backgroundColor: '#4CAF50',
-    borderRadius: 10,
+    padding:10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+
     justifyContent: 'center',
     alignItems: 'center',
   },
   buttonText: {
+    fontSize:15,
     color: 'white',
-    fontSize: 16,
+    textAlign: 'center',
   },
 });
 

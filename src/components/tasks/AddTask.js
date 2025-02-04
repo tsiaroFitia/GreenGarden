@@ -34,7 +34,7 @@ export default class AddTask extends Component {
         <View style={styles.header}>
           <Text style={styles.headerText}>Add Task</Text>
           <TouchableOpacity onPress={this.props.onClose}>
-            <MaterialIcons name="cancel" size={30} color={Colors.vert4} />
+            <MaterialIcons name="cancel" size={30} color={Colors.vert1} />
           </TouchableOpacity>
         </View>
 
@@ -54,7 +54,7 @@ export default class AddTask extends Component {
             <Text>Date</Text>
             <TouchableOpacity onPress={this.showDatepicker}>
               <View style={styles.dateInput}>
-                <FontAwesome name="calendar" size={22} color={Colors.vert4} />
+                <FontAwesome name="calendar" size={22} color={Colors.vert1} />
                 <Text style={styles.dateText}>{date.toDateString()}</Text>
               </View>
             </TouchableOpacity>
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: Colors.vert4,
+    color: Colors.vert1,
   },
   body: {
     marginBottom: 20,
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   buttonAddTask: {
     width: 90,
     height: 45,
-    backgroundColor: Colors.vert2,
+    backgroundColor: Colors.vert1,
     borderRadius: 15,
     flexDirection: 'row',
     alignItems: 'center',

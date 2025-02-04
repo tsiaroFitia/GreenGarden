@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   },
   iconDelete: {
     marginLeft: 10,
-    color: Colors.vert4,
+    color: Colors.vert5,
     opacity:0.7,
   }
 })

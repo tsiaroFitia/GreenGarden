@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
   welcome: {
     fontSize: 32,
     fontWeight: 'bold', // Utilisation de bold pour le poids
-    color: Colors.vert4,
+    color: Colors.vert5,
     
   },
   welcome2: {
