@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import * as Animatable from 'react-native-animatable';
-import ModalProfil from '../components/profil/ModalProfil'; // Assurez-vous d'importer ModalProfil
-import EditProfil from '../components/profil/EditProfil'; // Assurez-vous d'importer EditProfil
+import ModalProfil from '../components/profil/ModalProfil';
+import EditProfil from '../components/profil/EditProfil';
 
 
 class ProfilApp extends Component {
