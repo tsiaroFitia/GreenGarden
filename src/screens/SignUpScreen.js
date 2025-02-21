@@ -14,24 +14,32 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import Colors from "../outils/Colors";
 
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../Firebaseconfig"; // Utilisation de l'auth initialisée
+import { auth } from "../../Firebaseconfig";
 
-const userAccount = async (data) => {
+const userAccount = async (data, setError) => {
   if (data.password !== data.confirmPassword) {
-    Alert.alert("Erreur", "Les mots de passe ne correspondent pas !");
+    setError((prevError) => ({
+      ...prevError,
+      confirmPassword: "Les mots de passe sont différents",
+    }));
     return;
   }
 
   try {
-    // Utilisation de createUserWithEmailAndPassword avec l'auth exportée
     await createUserWithEmailAndPassword(auth, data.email, data.password);
     Alert.alert("Succès", "Compte utilisateur créé et connecté !");
   } catch (error) {
     console.log(error.code, error.message);
     if (error.code === "auth/email-already-in-use") {
-      Alert.alert("Erreur", "Cette adresse e-mail est déjà utilisée !");
+      setError((prevError) => ({
+        ...prevError,
+        email: "Cette adresse e-mail est déjà utilisée !",
+      }));
     } else if (error.code === "auth/invalid-email") {
-      Alert.alert("Erreur", "L'adresse e-mail est invalide !");
+      setError((prevError) => ({
+        ...prevError,
+        email: "L'adresse e-mail est invalide !",
+      }));
     } else {
       Alert.alert("Erreur", error.message);
     }
@@ -48,20 +56,27 @@ export default function SignInScreen({ navigation }) {
     secureTextEntryConfirm: true,
   });
 
+  const [error, setError] = React.useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
   const textInputChange = (val) => {
     setData({
       ...data,
       email: val,
       check_textInputChange: val.length !== 0,
     });
+    setError((prevError) => ({ ...prevError, email: "" }));
   };
 
   const handlePasswordChange = (val) => {
-    // Correction du nom de la fonction
     setData({
       ...data,
       password: val,
     });
+    setError((prevError) => ({ ...prevError, password: "" }));
   };
 
   const handleConfirmPasswordChange = (val) => {
@@ -69,6 +84,7 @@ export default function SignInScreen({ navigation }) {
       ...data,
       confirmPassword: val,
     });
+    setError((prevError) => ({ ...prevError, confirmPassword: "" }));
   };
 
   const updateSecureTextEntry = () => {
@@ -111,8 +127,7 @@ export default function SignInScreen({ navigation }) {
               </Animatable.View>
             ) : null}
           </View>
-          {/*message d'erreur si erreur en rouge si succes rediriger vers component=SignIN */}
-          <Text></Text>
+          {error.email ? <Text style={styles.Error}>{error.email}</Text> : null}
         </Animatable.View>
 
         <Animatable.View animation="fadeInUpBig" style={styles.viewInput}>
@@ -124,7 +139,7 @@ export default function SignInScreen({ navigation }) {
               style={styles.input}
               placeholder="Entrer your password..."
               secureTextEntry={data.secureTextEntry}
-              onChangeText={(val) => handlePasswordChange(val)} // Correction du nom de la fonction
+              onChangeText={(val) => handlePasswordChange(val)}
             />
             <TouchableOpacity onPress={updateSecureTextEntry}>
               {data.secureTextEntry ? (
@@ -134,6 +149,9 @@ export default function SignInScreen({ navigation }) {
               )}
             </TouchableOpacity>
           </View>
+          {error.password ? (
+            <Text style={styles.Error}>{error.password}</Text>
+          ) : null}
         </Animatable.View>
 
         <Animatable.View animation="fadeInUpBig" style={styles.viewInput}>
@@ -155,12 +173,13 @@ export default function SignInScreen({ navigation }) {
               )}
             </TouchableOpacity>
           </View>
-          {/*affiche erreur si different de password en rouge*/}
-          <Text></Text>
+          {error.confirmPassword ? (
+            <Text style={styles.Error}>{error.confirmPassword}</Text>
+          ) : null}
         </Animatable.View>
 
         <View style={styles.button}>
-          <TouchableOpacity onPress={() => userAccount(data)}>
+          <TouchableOpacity onPress={() => userAccount(data, setError)}>
             <Animatable.View animation="fadeInLeftBig" style={styles.button1}>
               <Text style={styles.buttonText1}>Sign Up</Text>
             </Animatable.View>
@@ -188,7 +207,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.vert1,
     textAlign: "center",
     justifyContent: "center",
-    marginBottom: 25, // Espacement entre le premier et le deuxième bouton
+    marginBottom: 23,
   },
   buttonText1: {
     fontSize: 16,
@@ -252,5 +271,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: Colors.vert2,
+  },
+  Error: {
+    color: "red",
+    fontSize: 12,
+    marginTop: 5,
   },
 });
