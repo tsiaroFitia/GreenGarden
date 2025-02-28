@@ -10,6 +10,7 @@ import * as Animatable from "react-native-animatable";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
+import { supabase } from "../../supabase";
 
 import Colors from "../outils/Colors";
 
@@ -54,11 +55,12 @@ export default function SignInScreen({ navigation }) {
   };
 
   const isValidEmail = (email) => {
+    //forme email fitia@gmail.com
     const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
     return regex.test(email);
   };
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
     if (data.email === "" || !isValidEmail(data.email)) {
       setData({ ...data, isValidUser: false });
     } else {
@@ -72,7 +74,18 @@ export default function SignInScreen({ navigation }) {
     }
 
     if (isValidEmail(data.email) && data.password !== "") {
-      navigation.navigate("MainAppScreen");
+      // Authentification avec Supabase
+      const { user, error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (error) {
+        console.error("Authentication error:", error.message);
+      } else {
+        console.log("User authenticated:", user);
+        navigation.navigate("MainAppScreen");
+      }
     }
   };
 

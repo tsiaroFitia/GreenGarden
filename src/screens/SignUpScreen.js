@@ -11,10 +11,9 @@ import * as Animatable from "react-native-animatable";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import Colors from "../outils/Colors";
+import { supabase } from "../../supabase";
 
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../Firebaseconfig";
+import Colors from "../outils/Colors";
 
 const userAccount = async (data, setError) => {
   if (data.password !== data.confirmPassword) {
@@ -26,19 +25,20 @@ const userAccount = async (data, setError) => {
   }
 
   try {
-    await createUserWithEmailAndPassword(auth, data.email, data.password);
-    Alert.alert("Succès", "Compte utilisateur créé et connecté !");
+    const { user, error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+    });
+
+    if (error) throw error;
+
+    Alert.alert("Succès", "Compte utilisateur créé avec succès !");
   } catch (error) {
-    console.log(error.code, error.message);
-    if (error.code === "auth/email-already-in-use") {
+    console.log(error.message);
+    if (error.message.includes("email")) {
       setError((prevError) => ({
         ...prevError,
         email: "Cette adresse e-mail est déjà utilisée !",
-      }));
-    } else if (error.code === "auth/invalid-email") {
-      setError((prevError) => ({
-        ...prevError,
-        email: "L'adresse e-mail est invalide !",
       }));
     } else {
       Alert.alert("Erreur", error.message);

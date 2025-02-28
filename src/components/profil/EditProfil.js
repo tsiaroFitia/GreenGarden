@@ -1,10 +1,18 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import * as ImagePicker from 'expo-image-picker';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Image,
+} from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import * as ImagePicker from "expo-image-picker";
 
-import Colors from '../../outils/Colors';
+import Colors from "../../outils/Colors";
 
 const EditProfil = ({ goBack }) => {
   const [selectedGender, setSelectedGender] = useState(null);
@@ -13,8 +21,11 @@ const EditProfil = ({ goBack }) => {
   // Fonction pour ouvrir la galerie
   const openGallery = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission Denied', 'Permission required to access the gallery.');
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission Denied",
+        "Permission required to access the gallery."
+      );
       return;
     }
 
@@ -68,7 +79,11 @@ const EditProfil = ({ goBack }) => {
         <View style={styles.Viewinput}>
           <View style={styles.inputContainer}>
             <Icon name="envelope" size={16} color={Colors.vert1} />
-            <TextInput placeholder="Email" keyboardType="email-address" style={styles.input} />
+            <TextInput
+              placeholder="Email"
+              keyboardType="email-address"
+              style={styles.input}
+            />
           </View>
         </View>
 
@@ -76,7 +91,11 @@ const EditProfil = ({ goBack }) => {
         <View style={styles.Viewinput}>
           <View style={styles.inputContainer}>
             <Icon name="phone" size={20} color={Colors.vert1} />
-            <TextInput placeholder="Phone" keyboardType="numeric" style={styles.input} />
+            <TextInput
+              placeholder="Phone"
+              keyboardType="numeric"
+              style={styles.input}
+            />
           </View>
         </View>
 
@@ -84,18 +103,36 @@ const EditProfil = ({ goBack }) => {
         <View style={styles.Viewinput}>
           <View style={styles.genderContainer}>
             <TouchableOpacity
-              style={[styles.genderButton, selectedGender === 'male' && styles.selectedButton]}
-              onPress={() => handleGenderSelection('male')}
+              style={[
+                styles.genderButton,
+                selectedGender === "male" && styles.selectedButton,
+              ]}
+              onPress={() => handleGenderSelection("male")}
             >
-              <MaterialIcons name="male" size={20} color={selectedGender === 'male' ? Colors.vert : Colors.grisclair} />
+              <MaterialIcons
+                name="male"
+                size={20}
+                color={
+                  selectedGender === "male" ? Colors.vert : Colors.grisclair
+                }
+              />
               <Text style={styles.genderText}>Homme</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.genderButton, selectedGender === 'female' && styles.selectedButton]}
-              onPress={() => handleGenderSelection('female')}
+              style={[
+                styles.genderButton,
+                selectedGender === "female" && styles.selectedButton,
+              ]}
+              onPress={() => handleGenderSelection("female")}
             >
-              <MaterialIcons name="female" size={20} color={selectedGender === 'female' ? Colors.vert : Colors.grisclair} />
+              <MaterialIcons
+                name="female"
+                size={20}
+                color={
+                  selectedGender === "female" ? Colors.vert : Colors.grisclair
+                }
+              />
               <Text style={styles.genderText}>Femme</Text>
             </TouchableOpacity>
           </View>
@@ -106,7 +143,12 @@ const EditProfil = ({ goBack }) => {
       <View style={styles.footer}>
         <TouchableOpacity style={styles.buttonOK}>
           <Text style={styles.buttonText}>Valid</Text>
-          <MaterialIcons name="edit" size={20} color="white" style={styles.iconSpacing} />
+          <MaterialIcons
+            name="edit"
+            size={20}
+            color="white"
+            style={styles.iconSpacing}
+          />
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -116,24 +158,24 @@ const EditProfil = ({ goBack }) => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    width: '100%',
-    backgroundColor: 'white',
+    width: "100%",
+    backgroundColor: "white",
     borderRadius: 20,
     padding: 20,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 20,
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: Colors.vert5,
   },
   photoSection: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 30,
   },
   photoContainer: {
@@ -141,25 +183,25 @@ const styles = StyleSheet.create({
     height: 120,
     backgroundColor: Colors.vert1,
     borderRadius: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 3,
-    borderColor: 'white',
+    borderColor: "white",
   },
   profileImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderRadius: 60,
   },
   formSection: {
-    width: '100%',
+    width: "100%",
   },
   Viewinput: {
     marginBottom: 15,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     height: 43,
     borderColor: Colors.grisclair,
     borderWidth: 1,
@@ -171,19 +213,19 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
   },
   genderContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
   },
   genderButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 10,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#ccc',
-    width: '45%',
-    justifyContent: 'center',
+    borderColor: "#ccc",
+    width: "45%",
+    justifyContent: "center",
   },
   selectedButton: {
     borderColor: Colors.vert1,
@@ -193,22 +235,22 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   footer: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
     marginTop: 20,
   },
   buttonOK: {
     backgroundColor: Colors.vert1,
     borderRadius: 13,
-    width: '45%',
+    width: "45%",
     height: 50,
     padding: 10,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
   },
   buttonText: {
     fontSize: 15,
-    color: 'white',
+    color: "white",
   },
   iconSpacing: {
     marginLeft: 15,
