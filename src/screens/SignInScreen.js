@@ -11,7 +11,6 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { supabase } from "../../supabase";
-
 import Colors from "../outils/Colors";
 
 export default function SignInScreen({ navigation }) {
