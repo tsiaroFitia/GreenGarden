@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, TouchableOpacity, Modal } from "react-native";
+import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
 import React, { Component } from "react";
 import FontAwesome6 from "react-native-vector-icons/FontAwesome6";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
@@ -19,13 +19,8 @@ export default class ListTask extends Component {
   // Récupérer les tâches depuis Supabase
   fetchTasks = async () => {
     try {
-      const { data, error } = await supabase.from("task").select("*"); // Vérifier si la table est bien "task"
+      const { data, error } = await supabase.from("task").select("*");
       if (error) throw error;
-      if (!data || data.length === 0) {
-        console.log("Aucune tâche trouvée.");
-      } else {
-        console.log("Tâches récupérées :", data);
-      }
       this.setState({ tasks: data || [] });
     } catch (error) {
       console.error("Erreur lors de la récupération des tâches :", error);
@@ -43,7 +38,6 @@ export default class ListTask extends Component {
         .from("task")
         .update({ is_achieved: !isAchieved })
         .eq("id", taskId);
-
       if (error) throw error;
       this.fetchTasks();
     } catch (error) {
@@ -132,34 +126,12 @@ export default class ListTask extends Component {
         ))}
 
         {/* Modal de confirmation de suppression */}
-        <Modal
-          transparent={true}
-          visible={isModalDeleteVisible}
-          animationType="slide"
-          onRequestClose={this.closeDeleteTaskModal}
-        >
-          <View style={styles.modalBackground}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalText}>
-                Voulez-vous supprimer cette tâche ?
-              </Text>
-              <View style={styles.modalButtons}>
-                <TouchableOpacity
-                  onPress={this.deleteTask}
-                  style={styles.buttonDelete}
-                >
-                  <Text style={styles.buttonText}>Supprimer</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={this.closeDeleteTaskModal}
-                  style={styles.buttonCancel}
-                >
-                  <Text style={styles.buttonText}>Annuler</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Modal>
+        {isModalDeleteVisible && (
+          <DeleteTask
+            onClose={this.closeDeleteTaskModal}
+            onConfirm={this.deleteTask}
+          />
+        )}
       </View>
     );
   }
@@ -203,44 +175,5 @@ const styles = StyleSheet.create({
   achievedText: {
     textDecorationLine: "line-through",
     color: "grey",
-  },
-  modalBackground: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
-  },
-  modalContent: {
-    width: "80%",
-    backgroundColor: "white",
-    padding: 20,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  modalText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-  modalButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-  },
-  buttonDelete: {
-    backgroundColor: "red",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-  },
-  buttonCancel: {
-    backgroundColor: "grey",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-  },
-  buttonText: {
-    color: "white",
-    fontWeight: "bold",
   },
 });
