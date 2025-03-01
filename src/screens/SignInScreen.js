@@ -85,8 +85,11 @@ export default function SignInScreen({ navigation }) {
     }
 
     if (isValidEmail(data.email) && data.password !== "") {
-      // Authentification avec Supabase
-      const { user, error } = await supabase.auth.signInWithPassword({
+      // Étape 1 : Connexion avec Supabase Auth
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       });
@@ -96,10 +99,42 @@ export default function SignInScreen({ navigation }) {
         setSnackbarMessage(error.message);
         setSnackbarType("error");
         setSnackbarVisible(true);
-      } else {
-        console.log("User authenticated:", user);
-        navigation.navigate("MainAppScreen");
+        return;
       }
+
+      // Étape 2 : Vérifier si l'utilisateur a un profil
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (profileError || !profile) {
+        // Si l'utilisateur n'a pas de profil, créer un profil minimal
+        const { data: newProfile, error: newProfileError } = await supabase
+          .from("profiles")
+          .insert([
+            {
+              id: user.id,
+              email: user.email,
+              created_at: new Date().toISOString(),
+            },
+          ]);
+
+        if (newProfileError) {
+          console.error(
+            "Erreur lors de la création du profil :",
+            newProfileError
+          );
+          setSnackbarMessage("Erreur lors de la création du profil.");
+          setSnackbarType("error");
+          setSnackbarVisible(true);
+          return;
+        }
+      }
+
+      // Étape 3 : Rediriger vers l'écran principal
+      navigation.navigate("MainAppScreen");
     }
   };
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -11,21 +11,69 @@ import {
 import Icon from "react-native-vector-icons/FontAwesome";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import * as ImagePicker from "expo-image-picker";
-
+import { supabase } from "../../../supabase";
 import Colors from "../../outils/Colors";
+import CustomSnackbar from "../CustomSnackBar";
 
 const EditProfil = ({ goBack }) => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [selectedGender, setSelectedGender] = useState(null);
-  const [profileImage, setProfileImage] = useState(null); // Ajoutez un state pour gérer l'image
+  const [profileImage, setProfileImage] = useState(null);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarType, setSnackbarType] = useState("success");
+
+  // Récupérer l'utilisateur connecté et charger les données du profil
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+      if (error) {
+        console.error(
+          "Erreur lors de la récupération de l'utilisateur :",
+          error
+        );
+        return;
+      }
+
+      // Récupérer les données du profil
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (profileError) {
+        console.error(
+          "Erreur lors de la récupération du profil :",
+          profileError
+        );
+        return;
+      }
+
+      // Pré-remplir les champs avec les données existantes
+      if (profile) {
+        setName(profile.name || "");
+        setEmail(profile.email || "");
+        setPhone(profile.phone || "");
+        setSelectedGender(profile.genre || null);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   // Fonction pour ouvrir la galerie
   const openGallery = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert(
-        "Permission Denied",
-        "Permission required to access the gallery."
-      );
+      setSnackbarMessage("Permission d'accès à la galerie refusée.");
+      setSnackbarType("error");
+      setSnackbarVisible(true);
       return;
     }
 
@@ -40,8 +88,45 @@ const EditProfil = ({ goBack }) => {
     }
   };
 
-  const handleGenderSelection = (gender) => {
-    setSelectedGender(gender);
+  // Fonction pour mettre à jour le profil
+  const handleUpdateProfile = async () => {
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError) {
+      console.error(
+        "Erreur lors de la récupération de l'utilisateur :",
+        authError
+      );
+      setSnackbarMessage("Erreur lors de la récupération de l'utilisateur.");
+      setSnackbarType("error");
+      setSnackbarVisible(true);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .update({
+          name,
+          email,
+          phone,
+          genre: selectedGender,
+        })
+        .eq("id", user.id);
+
+      if (error) throw error;
+
+      setSnackbarMessage("Profil mis à jour avec succès !");
+      setSnackbarType("success");
+      setSnackbarVisible(true);
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du profil :", error);
+      setSnackbarMessage("Erreur lors de la mise à jour du profil.");
+      setSnackbarType("error");
+      setSnackbarVisible(true);
+    }
   };
 
   return (
@@ -71,7 +156,12 @@ const EditProfil = ({ goBack }) => {
         <View style={styles.Viewinput}>
           <View style={styles.inputContainer}>
             <Icon name="user" size={20} color={Colors.vert1} />
-            <TextInput placeholder="Name" style={styles.input} />
+            <TextInput
+              placeholder="Name"
+              value={name}
+              onChangeText={setName}
+              style={styles.input}
+            />
           </View>
         </View>
 
@@ -81,18 +171,22 @@ const EditProfil = ({ goBack }) => {
             <Icon name="envelope" size={16} color={Colors.vert1} />
             <TextInput
               placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
               keyboardType="email-address"
               style={styles.input}
             />
           </View>
         </View>
 
-        {/* Prénom */}
+        {/* Téléphone */}
         <View style={styles.Viewinput}>
           <View style={styles.inputContainer}>
             <Icon name="phone" size={20} color={Colors.vert1} />
             <TextInput
               placeholder="Phone"
+              value={phone}
+              onChangeText={setPhone}
               keyboardType="numeric"
               style={styles.input}
             />
@@ -105,15 +199,15 @@ const EditProfil = ({ goBack }) => {
             <TouchableOpacity
               style={[
                 styles.genderButton,
-                selectedGender === "male" && styles.selectedButton,
+                selectedGender === "homme" && styles.selectedButton,
               ]}
-              onPress={() => handleGenderSelection("male")}
+              onPress={() => setSelectedGender("homme")}
             >
               <MaterialIcons
                 name="male"
                 size={20}
                 color={
-                  selectedGender === "male" ? Colors.vert : Colors.grisclair
+                  selectedGender === "homme" ? Colors.vert : Colors.grisclair
                 }
               />
               <Text style={styles.genderText}>Homme</Text>
@@ -122,15 +216,15 @@ const EditProfil = ({ goBack }) => {
             <TouchableOpacity
               style={[
                 styles.genderButton,
-                selectedGender === "female" && styles.selectedButton,
+                selectedGender === "femme" && styles.selectedButton,
               ]}
-              onPress={() => handleGenderSelection("female")}
+              onPress={() => setSelectedGender("femme")}
             >
               <MaterialIcons
                 name="female"
                 size={20}
                 color={
-                  selectedGender === "female" ? Colors.vert : Colors.grisclair
+                  selectedGender === "femme" ? Colors.vert : Colors.grisclair
                 }
               />
               <Text style={styles.genderText}>Femme</Text>
@@ -141,7 +235,7 @@ const EditProfil = ({ goBack }) => {
 
       {/* Bouton Valider */}
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.buttonOK}>
+        <TouchableOpacity style={styles.buttonOK} onPress={handleUpdateProfile}>
           <Text style={styles.buttonText}>Valid</Text>
           <MaterialIcons
             name="edit"
@@ -151,6 +245,14 @@ const EditProfil = ({ goBack }) => {
           />
         </TouchableOpacity>
       </View>
+
+      {/* CustomSnackbar pour afficher les messages */}
+      <CustomSnackbar
+        visible={snackbarVisible}
+        message={snackbarMessage}
+        type={snackbarType}
+        onDismiss={() => setSnackbarVisible(false)}
+      />
     </ScrollView>
   );
 };
@@ -256,5 +358,4 @@ const styles = StyleSheet.create({
     marginLeft: 15,
   },
 });
-
 export default EditProfil;

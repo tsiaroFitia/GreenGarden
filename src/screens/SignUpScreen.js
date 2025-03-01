@@ -86,12 +86,29 @@ const SignUpScreen = ({ navigation }) => {
     }
 
     try {
+      // Étape 1 : Inscription avec Supabase Auth
       const { user, error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
       });
 
       if (error) throw error;
+
+      // Étape 2 : Créer un profil minimal dans la table `profiles`
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .insert([
+          {
+            id: user.id, // L'ID de l'utilisateur authentifié
+            email: user.email, // L'email de l'utilisateur
+            created_at: new Date().toISOString(), // Date de création
+          },
+        ]);
+
+      if (profileError) throw profileError;
+
+      // Étape 3 : Rediriger vers l'écran principal
+      navigation.navigate("MainAppScreen");
 
       setSnackbarMessage("Compte utilisateur créé avec succès !");
       setSnackbarType("success");
