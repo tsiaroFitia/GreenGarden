@@ -5,48 +5,16 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Alert,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { supabase } from "../../supabase";
-
 import Colors from "../outils/Colors";
+import CustomSnackbar from "../components/CustomSnackBar";
 
-const userAccount = async (data, setError) => {
-  if (data.password !== data.confirmPassword) {
-    setError((prevError) => ({
-      ...prevError,
-      confirmPassword: "Les mots de passe sont différents",
-    }));
-    return;
-  }
-
-  try {
-    const { user, error } = await supabase.auth.signUp({
-      email: data.email,
-      password: data.password,
-    });
-
-    if (error) throw error;
-
-    Alert.alert("Succès", "Compte utilisateur créé avec succès !");
-  } catch (error) {
-    console.log(error.message);
-    if (error.message.includes("email")) {
-      setError((prevError) => ({
-        ...prevError,
-        email: "Cette adresse e-mail est déjà utilisée !",
-      }));
-    } else {
-      Alert.alert("Erreur", error.message);
-    }
-  }
-};
-
-export default function SignInScreen({ navigation }) {
+const SignUpScreen = ({ navigation }) => {
   const [data, setData] = React.useState({
     email: "",
     password: "",
@@ -61,6 +29,10 @@ export default function SignInScreen({ navigation }) {
     password: "",
     confirmPassword: "",
   });
+
+  const [snackbarVisible, setSnackbarVisible] = React.useState(false);
+  const [snackbarMessage, setSnackbarMessage] = React.useState("");
+  const [snackbarType, setSnackbarType] = React.useState("success"); // "success" ou "error"
 
   const textInputChange = (val) => {
     setData({
@@ -99,6 +71,47 @@ export default function SignInScreen({ navigation }) {
       ...data,
       secureTextEntryConfirm: !data.secureTextEntryConfirm,
     });
+  };
+
+  const userAccount = async (data, setError) => {
+    if (data.password !== data.confirmPassword) {
+      setError((prevError) => ({
+        ...prevError,
+        confirmPassword: "Les mots de passe sont différents",
+      }));
+      setSnackbarMessage("Les mots de passe sont différents.");
+      setSnackbarType("error");
+      setSnackbarVisible(true);
+      return;
+    }
+
+    try {
+      const { user, error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (error) throw error;
+
+      setSnackbarMessage("Compte utilisateur créé avec succès !");
+      setSnackbarType("success");
+      setSnackbarVisible(true);
+    } catch (error) {
+      console.log(error.message);
+      if (error.message.includes("email")) {
+        setError((prevError) => ({
+          ...prevError,
+          email: "Cette adresse e-mail est déjà utilisée !",
+        }));
+        setSnackbarMessage("Cette adresse e-mail est déjà utilisée !");
+        setSnackbarType("error");
+        setSnackbarVisible(true);
+      } else {
+        setSnackbarMessage(error.message);
+        setSnackbarType("error");
+        setSnackbarVisible(true);
+      }
+    }
   };
 
   return (
@@ -192,9 +205,17 @@ export default function SignInScreen({ navigation }) {
           </TouchableOpacity>
         </View>
       </Animatable.View>
+
+      {/* CustomSnackbar pour afficher les messages */}
+      <CustomSnackbar
+        visible={snackbarVisible}
+        message={snackbarMessage}
+        type={snackbarType}
+        onDismiss={() => setSnackbarVisible(false)}
+      />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   button: {
@@ -278,3 +299,5 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
 });
+
+export default SignUpScreen;

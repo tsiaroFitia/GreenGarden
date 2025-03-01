@@ -3,8 +3,8 @@ import { Modal, View, Text, StyleSheet, Animated } from "react-native";
 import Colors from "../outils/Colors";
 
 const CustomSnackbar = ({ visible, message, onDismiss, type = "success" }) => {
-  const backgroundColor = type === "success" ? Colors.vert1 : Colors.rouge;
-  const translateY = new Animated.Value(100); // Départ en bas
+  const backgroundColor = type === "success" ? Colors.vert1 : Colors.gris;
+  const translateY = new Animated.Value(100);
 
   useEffect(() => {
     if (visible) {
@@ -16,7 +16,7 @@ const CustomSnackbar = ({ visible, message, onDismiss, type = "success" }) => {
 
       const timer = setTimeout(() => {
         onDismiss();
-      }, 1500);
+      }, 2500);
 
       return () => clearTimeout(timer);
     } else {
@@ -64,9 +64,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   message: {
-    fontSize: 16,
-    color: "white",
-    fontWeight: "bold",
+    fontSize: 14,
   },
 });
 

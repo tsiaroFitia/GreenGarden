@@ -12,6 +12,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { supabase } from "../../supabase";
 import Colors from "../outils/Colors";
+import CustomSnackbar from "../components/CustomSnackBar";
 
 export default function SignInScreen({ navigation }) {
   const [data, setData] = React.useState({
@@ -22,6 +23,10 @@ export default function SignInScreen({ navigation }) {
     isValidUser: true,
     isValidPassword: true,
   });
+
+  const [snackbarVisible, setSnackbarVisible] = React.useState(false);
+  const [snackbarMessage, setSnackbarMessage] = React.useState("");
+  const [snackbarType, setSnackbarType] = React.useState("success");
 
   const textInputChange = (val) => {
     if (val.length !== 0) {
@@ -54,7 +59,6 @@ export default function SignInScreen({ navigation }) {
   };
 
   const isValidEmail = (email) => {
-    //forme email fitia@gmail.com
     const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
     return regex.test(email);
   };
@@ -62,12 +66,20 @@ export default function SignInScreen({ navigation }) {
   const handleSignIn = async () => {
     if (data.email === "" || !isValidEmail(data.email)) {
       setData({ ...data, isValidUser: false });
+      setSnackbarMessage("Please enter a valid email.");
+      setSnackbarType("error");
+      setSnackbarVisible(true);
+      return;
     } else {
       setData({ ...data, isValidUser: true });
     }
 
     if (data.password === "") {
       setData({ ...data, isValidPassword: false });
+      setSnackbarMessage("Password cannot be empty.");
+      setSnackbarType("error");
+      setSnackbarVisible(true);
+      return;
     } else {
       setData({ ...data, isValidPassword: true });
     }
@@ -81,6 +93,9 @@ export default function SignInScreen({ navigation }) {
 
       if (error) {
         console.error("Authentication error:", error.message);
+        setSnackbarMessage(error.message);
+        setSnackbarType("error");
+        setSnackbarVisible(true);
       } else {
         console.log("User authenticated:", user);
         navigation.navigate("MainAppScreen");
@@ -154,6 +169,14 @@ export default function SignInScreen({ navigation }) {
           </TouchableOpacity>
         </View>
       </Animatable.View>
+
+      {/* CustomSnackbar pour afficher les messages */}
+      <CustomSnackbar
+        visible={snackbarVisible}
+        message={snackbarMessage}
+        type={snackbarType}
+        onDismiss={() => setSnackbarVisible(false)}
+      />
     </View>
   );
 }
