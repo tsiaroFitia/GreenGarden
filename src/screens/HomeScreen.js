@@ -1,39 +1,41 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Image, Button, TouchableOpacity } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import * as Animatable from 'react-native-animatable';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  Button,
+  TouchableOpacity,
+} from "react-native";
 
-import Colors from '../outils/Colors';
+import * as Animatable from "react-native-animatable";
 
-export default function HomeScreen({navigation}) {
+import Colors from "../outils/Colors";
+
+export default function HomeScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Animatable.Image
-          animation='bounceIn'
+          animation="bounceIn"
           duration={1500}
-          source={require('../img/logo.png')}
+          source={require("../img/logo.png")}
           style={styles.logo}
           resizeMode="cover"
         />
       </View>
-      <Animatable.View 
-        animation='fadeInUpBig'
-        style={styles.footer}
-      >
+      <Animatable.View animation="fadeInUpBig" style={styles.footer}>
         <Text style={styles.welcome}>Welcome to</Text>
         <Text style={styles.welcome}>SmartHarvest</Text>
         <Text style={styles.welcome2}>Assistance of plantation with AI</Text>
         <View>
-           <TouchableOpacity onPress={() => navigation.navigate('SignInScreen')}>
-                              <Animatable.View 
-                                 animation='fadeInRightBig'
-                                 style={styles.buttonContainer}
-                              >
-                                   <Text style={styles.buttonText}>Get Started</Text>
-                              </Animatable.View>
-           </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate("SignInScreen")}>
+            <Animatable.View
+              animation="fadeInRightBig"
+              style={styles.buttonContainer}
+            >
+              <Text style={styles.buttonText}>Get Started</Text>
+            </Animatable.View>
+          </TouchableOpacity>
         </View>
       </Animatable.View>
     </View>
@@ -47,19 +49,19 @@ const styles = StyleSheet.create({
   },
   footer: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderTopLeftRadius: 40,
     borderTopRightRadius: 40,
-    paddingTop:25,
+    paddingTop: 25,
     paddingVertical: 50,
     paddingHorizontal: 30,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   header: {
     flex: 2,
     backgroundColor: Colors.vert1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   logo: {
     width: 220,
@@ -68,9 +70,8 @@ const styles = StyleSheet.create({
   },
   welcome: {
     fontSize: 32,
-    fontWeight: 'bold', // Utilisation de bold pour le poids
+    fontWeight: "bold", // Utilisation de bold pour le poids
     color: Colors.vert5,
-    
   },
   welcome2: {
     fontSize: 20,
@@ -78,20 +79,19 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   buttonContainer: {
-    width: '50%',
+    width: "50%",
     height: 45,
     backgroundColor: Colors.vert1,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 20,
     borderRadius: 20,
-    justifyContent:'center',
-    alignSelf: 'flex-end', // Ajoutez cette ligne pour aligner à droite
+    justifyContent: "center",
+    alignSelf: "flex-end", // Ajoutez cette ligne pour aligner à droite
   },
-  buttonText:{
-    fontSize:16,
-    color:'white',
-    alignItems: 'center',
-    justifyContent:'center',
+  buttonText: {
+    fontSize: 16,
+    color: "white",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
-

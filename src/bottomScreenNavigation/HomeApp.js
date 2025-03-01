@@ -1,28 +1,79 @@
-import { StyleSheet, View, Modal, ScrollView } from 'react-native';
-import React, { useState } from 'react';
-import Colors from '../outils/Colors';
-import Header from '../components/Header';
-import HeaderTask from '../components/tasks/HeaderTask';
-import TrierTasks from '../components/tasks/TrierTasks';
-import AddTask from '../components/tasks/AddTask';
-import ListTask from '../components/tasks/ListTask';
+import {
+  StyleSheet,
+  View,
+  Modal,
+  ScrollView,
+  RefreshControl,
+} from "react-native";
+import React, { useState, useEffect } from "react";
+import Colors from "../outils/Colors";
+import Header from "../components/Header";
+import HeaderTask from "../components/tasks/HeaderTask";
+import TrierTasks from "../components/tasks/TrierTasks";
+import AddTask from "../components/tasks/AddTask";
+import ListTask from "../components/tasks/ListTask";
+import { supabase } from "../../supabase"; // Assurez-vous que votre configuration Supabase est correcte.
 
 const HomeApp = () => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [tasks, setTasks] = useState([]);
+  const [filter, setFilter] = useState("All");
+  const [refreshing, setRefreshing] = useState(false);
 
-  const openAddTaskModal = () => {
-    setModalVisible(true);
+  // Fonction pour ouvrir le modal d'ajout de tâche
+  const openAddTaskModal = () => setModalVisible(true);
+
+  // Fonction pour fermer le modal d'ajout de tâche
+  const closeAddTaskModal = () => setModalVisible(false);
+
+  // Fonction pour ajouter une tâche
+  const addTask = async (name, date) => {
+    try {
+      const { data, error } = await supabase
+        .from("task")
+        .insert([{ name, date, is_achieved: false }]);
+
+      if (error) throw error;
+
+      // Rafraîchit la liste des tâches après l'ajout
+      fetchTasks();
+    } catch (error) {
+      console.error("Erreur lors de l'ajout de la tâche :", error);
+    }
   };
 
-  const closeAddTaskModal = () => {
-    setModalVisible(false);
+  // Fonction pour charger les tâches depuis Supabase
+  const fetchTasks = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("task")
+        .select("*")
+        .order("date", { ascending: false });
+
+      if (error) throw error;
+
+      setTasks(data || []); // Met à jour l'état des tâches
+    } catch (error) {
+      console.error("Erreur lors de la récupération des tâches :", error);
+    }
   };
 
-  const addTask = (name, date) => {
-    const newTask = { name, date };
-    setTasks((prevTasks) => [...prevTasks, newTask]);
+  // Fonction pour gérer le changement de filtre
+  const handleFilterChange = (filter) => {
+    setFilter(filter);
   };
+
+  // Fonction pour gérer le rafraîchissement de la liste
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchTasks(); // Rafraîchit la liste des tâches
+    setRefreshing(false); // Arrête le rafraîchissement
+  };
+
+  // Charge les tâches lors du premier rendu du composant
+  useEffect(() => {
+    fetchTasks();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -33,10 +84,9 @@ const HomeApp = () => {
           <HeaderTask openModal={openAddTaskModal} />
         </View>
         <View style={styles.content2}>
-          <TrierTasks />
+          <TrierTasks onFilterChange={handleFilterChange} />
         </View>
 
-        {/* Modal pour Ajouter une tâche */}
         <Modal
           transparent={true}
           visible={isModalVisible}
@@ -49,8 +99,13 @@ const HomeApp = () => {
         </Modal>
       </View>
 
-      <ScrollView contentContainerStyle={{ gap: 20 }}>
-        <ListTask tasks={tasks} />
+      <ScrollView
+        contentContainerStyle={{ gap: 20 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <ListTask tasks={tasks} filter={filter} />
       </ScrollView>
     </View>
   );
@@ -64,7 +119,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.gris,
   },
   content: {
-    flexDirection: 'column',
+    flexDirection: "column",
   },
   content1: {
     height: 100,
@@ -74,8 +129,8 @@ const styles = StyleSheet.create({
   },
   modalBackground: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)', // Fond semi-transparent
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
 });

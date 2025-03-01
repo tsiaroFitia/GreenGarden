@@ -1,63 +1,82 @@
-import { Text, TouchableOpacity, View , StyleSheet} from 'react-native'
-import React, { Component } from 'react'
-
-import Colors from '../../outils/Colors';
+import { Text, TouchableOpacity, View, StyleSheet } from "react-native";
+import React, { Component } from "react";
+import Colors from "../../outils/Colors";
 
 export default class TrierTasks extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      selectedFilter: "All", // Valeur par défaut
+    };
+  }
+
+  // Met à jour le filtre sélectionné et appelle la fonction onFilterChange
+  setFilter = (filter) => {
+    this.setState({ selectedFilter: filter });
+    this.props.onFilterChange(filter); // Appelle la fonction passée via les props
+  };
+
   render() {
+    const { selectedFilter } = this.state;
+    const filters = ["All", "Achieved", "Inachieved"];
+
     return (
       <View style={styles.container}>
         <View style={styles.menu}>
-            <TouchableOpacity>
-                <View style={styles.all}>
-                    <Text>All</Text>
+          {filters.map((filter, index) => (
+            <React.Fragment key={filter}>
+              <TouchableOpacity onPress={() => this.setFilter(filter)}>
+                <View
+                  style={[
+                    styles.filterItem,
+                    selectedFilter === filter && styles.activeFilter,
+                  ]}
+                >
+                  <Text
+                    style={{
+                      color: selectedFilter === filter ? Colors.vert1 : "black",
+                    }}
+                  >
+                    {filter}
+                  </Text>
                 </View>
-            </TouchableOpacity>
-            <Text style={styles.bar}>|</Text>
-            <TouchableOpacity>
-                <View style={styles.all}>
-                    <Text>Open</Text>
-                </View>
-            </TouchableOpacity>
-            <Text style={styles.bar}>|</Text>
-            <TouchableOpacity>
-                <View style={styles.all}>
-                    <Text>Closed</Text>
-                </View>
-            </TouchableOpacity>
-            <Text style={styles.bar}>|</Text>
-            <TouchableOpacity>
-                <View style={styles.all}>
-                    <Text>Achieved</Text>
-                </View>
-            </TouchableOpacity>
+              </TouchableOpacity>
+
+              {index < filters.length - 1 && <View style={styles.bar} />}
+            </React.Fragment>
+          ))}
         </View>
-        
       </View>
-    )
+    );
   }
 }
 
 const styles = StyleSheet.create({
-    all:{
-        opacity:0.7,
-    },
-    bar:{
-        color:'white',
-    },
-    container:{
-        width:'100%',
-        paddingVertical:5,
-        alignItems: 'center', // Centrer verticalement les enfants
-    },
-    menu:{
-        width:'90%',
-        height:20,
-        justifyContent:'space-between',
-        flexDirection: 'row',
-       // backgroundColor:Colors.vert2,
-        alignItems: 'center', // Centrer verticalement les enfants
-        paddingLeft:10,
-        paddingRight:10,
-    },
-})
+  container: {
+    width: "100%",
+    paddingVertical: 5,
+    alignItems: "center",
+  },
+  menu: {
+    width: "90%",
+    height: 40,
+    justifyContent: "space-evenly",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+  },
+  filterItem: {
+    opacity: 0.8,
+    paddingHorizontal: 15,
+  },
+  activeFilter: {
+    color: Colors.vert1,
+    fontWeight: "bold",
+  },
+  bar: {
+    width: 1,
+    height: "60%",
+    backgroundColor: "gray",
+    marginHorizontal: 10,
+  },
+});
