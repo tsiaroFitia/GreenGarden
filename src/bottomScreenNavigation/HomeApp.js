@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -5,20 +6,23 @@ import {
   ScrollView,
   RefreshControl,
 } from "react-native";
-import React, { useState, useEffect } from "react";
 import Colors from "../outils/Colors";
 import Header from "../components/Header";
 import HeaderTask from "../components/tasks/HeaderTask";
 import TrierTasks from "../components/tasks/TrierTasks";
 import AddTask from "../components/tasks/AddTask";
 import ListTask from "../components/tasks/ListTask";
-import { supabase } from "../../supabase"; // Assurez-vous que votre configuration Supabase est correcte.
+import { supabase } from "../../supabase";
+import CustomSnackbar from "../components/CustomSnackBar";
 
 const HomeApp = () => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [tasks, setTasks] = useState([]);
-  const [filter, setFilter] = useState("All");
+  const [filter, setFilter] = useState("All"); // État pour le filtre
   const [refreshing, setRefreshing] = useState(false);
+  const [snackVisible, setSnackVisible] = useState(false);
+  const [snackMessage, setSnackMessage] = useState("");
+  const [snackType, setSnackType] = useState("success");
 
   // Fonction pour ouvrir le modal d'ajout de tâche
   const openAddTaskModal = () => setModalVisible(true);
@@ -26,20 +30,11 @@ const HomeApp = () => {
   // Fonction pour fermer le modal d'ajout de tâche
   const closeAddTaskModal = () => setModalVisible(false);
 
-  // Fonction pour ajouter une tâche
-  const addTask = async (name, date) => {
-    try {
-      const { data, error } = await supabase
-        .from("task")
-        .insert([{ name, date, is_achieved: false }]);
-
-      if (error) throw error;
-
-      // Rafraîchit la liste des tâches après l'ajout
-      fetchTasks();
-    } catch (error) {
-      console.error("Erreur lors de l'ajout de la tâche :", error);
-    }
+  // Fonction pour gérer les messages de succès ou d'erreur
+  const handleAddTaskMessage = (message, type) => {
+    setSnackMessage(message);
+    setSnackType(type);
+    setSnackVisible(true);
   };
 
   // Fonction pour charger les tâches depuis Supabase
@@ -52,7 +47,7 @@ const HomeApp = () => {
 
       if (error) throw error;
 
-      setTasks(data || []); // Met à jour l'état des tâches
+      setTasks(data || []);
     } catch (error) {
       console.error("Erreur lors de la récupération des tâches :", error);
     }
@@ -60,14 +55,14 @@ const HomeApp = () => {
 
   // Fonction pour gérer le changement de filtre
   const handleFilterChange = (filter) => {
-    setFilter(filter);
+    setFilter(filter); // Met à jour l'état du filtre
   };
 
   // Fonction pour gérer le rafraîchissement de la liste
-  const onRefresh = () => {
+  const onRefresh = async () => {
     setRefreshing(true);
-    fetchTasks(); // Rafraîchit la liste des tâches
-    setRefreshing(false); // Arrête le rafraîchissement
+    await fetchTasks();
+    setRefreshing(false);
   };
 
   // Charge les tâches lors du premier rendu du composant
@@ -94,7 +89,10 @@ const HomeApp = () => {
           onRequestClose={closeAddTaskModal}
         >
           <View style={styles.modalBackground}>
-            <AddTask onAddTask={addTask} onClose={closeAddTaskModal} />
+            <AddTask
+              onAddTask={handleAddTaskMessage}
+              onClose={closeAddTaskModal}
+            />
           </View>
         </Modal>
       </View>
@@ -105,8 +103,16 @@ const HomeApp = () => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <ListTask tasks={tasks} filter={filter} />
+        <ListTask tasks={tasks} filter={filter} refreshTasks={fetchTasks} />
       </ScrollView>
+
+      {/* CustomSnackbar pour afficher les messages */}
+      <CustomSnackbar
+        visible={snackVisible}
+        message={snackMessage}
+        onDismiss={() => setSnackVisible(false)}
+        type={snackType}
+      />
     </View>
   );
 };

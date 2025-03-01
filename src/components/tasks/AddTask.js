@@ -16,7 +16,7 @@ export default class AddTask extends Component {
   state = {
     date: new Date(),
     showDatePicker: false,
-    taskName: "", // Ajoutez un état pour le nom de la tâche
+    taskName: "",
   };
 
   // Fonction pour afficher ou masquer le calendrier
@@ -36,9 +36,10 @@ export default class AddTask extends Component {
   // Fonction pour enregistrer la tâche dans Supabase
   handleAddTask = async () => {
     const { taskName, date } = this.state;
+    const { onAddTask, onClose } = this.props;
 
     if (!taskName.trim()) {
-      alert("Veuillez entrer un nom de tâche.");
+      onAddTask("Veuillez entrer un nom de tâche.", "error");
       return;
     }
 
@@ -53,11 +54,17 @@ export default class AddTask extends Component {
         throw error;
       }
 
-      alert("Tâche ajoutée avec succès !");
-      this.props.onClose();
+      // Notifier le parent de l'ajout réussi
+      onAddTask("Tâche ajoutée avec succès !", "success");
+
+      // Fermer le modal
+      onClose();
     } catch (error) {
       console.error("Erreur lors de l'ajout de la tâche :", error);
-      alert("Une erreur est survenue lors de l'ajout de la tâche.");
+      onAddTask(
+        "Une erreur est survenue lors de l'ajout de la tâche.",
+        "error"
+      );
     }
   };
 

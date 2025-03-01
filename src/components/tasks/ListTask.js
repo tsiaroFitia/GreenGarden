@@ -5,12 +5,23 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import Colors from "../../outils/Colors";
 import DeleteTask from "./DeleteTask";
 import { supabase } from "../../../supabase";
+import CustomSnackbar from "../CustomSnackBar";
 
-export default function ListTask({ tasks, refreshTasks }) {
+export default function ListTask({ tasks, filter, refreshTasks }) {
   const [isModalDeleteVisible, setModalDeleteVisible] = React.useState(false);
   const [selectedTaskId, setSelectedTaskId] = React.useState(null);
+  const [snackVisible, setSnackVisible] = React.useState(false);
+  const [snackMessage, setSnackMessage] = React.useState("");
+  const [snackType, setSnackType] = React.useState("success");
 
-  // Bascule le statut "is_achieved" d'une tâche
+  // Filtrer les tâches en fonction de la valeur du filtre
+  const filteredTasks = tasks.filter((task) => {
+    if (filter === "All") return true; // Afficher toutes les tâches
+    if (filter === "Achieved") return task.is_achieved; // Afficher les tâches terminées
+    if (filter === "Inachieved") return !task.is_achieved; // Afficher les tâches non terminées
+    return true; // Par défaut, afficher toutes les tâches
+  });
+
   const toggleAchieved = async (taskId, isAchieved) => {
     try {
       const { error } = await supabase
@@ -20,27 +31,35 @@ export default function ListTask({ tasks, refreshTasks }) {
 
       if (error) throw error;
 
-      refreshTasks();
+      refreshTasks(); // Rafraîchit la liste des tâches
+      setSnackMessage("Statut de la tâche mis à jour !");
+      setSnackType("success");
+      setSnackVisible(true);
     } catch (error) {
       console.error("Erreur lors de la mise à jour de la tâche :", error);
+      setSnackMessage("Erreur lors de la mise à jour de la tâche !");
+      setSnackType("error");
+      setSnackVisible(true);
     }
   };
 
-  // Ouvre le modal de suppression
   const openDeleteTaskModal = (taskId) => {
     setModalDeleteVisible(true);
     setSelectedTaskId(taskId);
   };
 
-  // Ferme le modal de suppression
   const closeDeleteTaskModal = () => {
     setModalDeleteVisible(false);
     setSelectedTaskId(null);
   };
 
-  // Supprime une tâche
   const deleteTask = async () => {
-    if (!selectedTaskId) return;
+    if (!selectedTaskId) {
+      setSnackMessage("Aucune tâche sélectionnée !");
+      setSnackType("error");
+      setSnackVisible(true);
+      return;
+    }
 
     try {
       const { error } = await supabase
@@ -51,15 +70,21 @@ export default function ListTask({ tasks, refreshTasks }) {
       if (error) throw error;
 
       closeDeleteTaskModal();
-      refreshTasks();
+      refreshTasks(); // Rafraîchit la liste des tâches
+      setSnackMessage("Tâche supprimée avec succès !");
+      setSnackType("success");
+      setSnackVisible(true);
     } catch (error) {
       console.error("Erreur lors de la suppression de la tâche :", error);
+      setSnackMessage("Erreur lors de la suppression de la tâche !");
+      setSnackType("error");
+      setSnackVisible(true);
     }
   };
 
   return (
     <View style={styles.container}>
-      {tasks.map((task) => (
+      {filteredTasks.map((task) => (
         <View key={task.id} style={styles.taskContainer}>
           <TouchableOpacity
             onPress={() => toggleAchieved(task.id, task.is_achieved)}
@@ -105,6 +130,13 @@ export default function ListTask({ tasks, refreshTasks }) {
       {isModalDeleteVisible && (
         <DeleteTask onClose={closeDeleteTaskModal} onConfirm={deleteTask} />
       )}
+
+      <CustomSnackbar
+        visible={snackVisible}
+        message={snackMessage}
+        onDismiss={() => setSnackVisible(false)}
+        type={snackType}
+      />
     </View>
   );
 }
