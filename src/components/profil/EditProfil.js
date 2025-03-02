@@ -15,7 +15,7 @@ import { supabase } from "../../../supabase";
 import Colors from "../../outils/Colors";
 import CustomSnackbar from "../CustomSnackBar";
 
-const EditProfil = ({ goBack }) => {
+const EditProfil = ({ goBack, onUpdateSuccess }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -28,39 +28,33 @@ const EditProfil = ({ goBack }) => {
   // Récupérer l'utilisateur connecté et charger les données du profil
   useEffect(() => {
     const fetchProfile = async () => {
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
-      if (error) {
-        console.error(
-          "Erreur lors de la récupération de l'utilisateur :",
-          error
-        );
-        return;
-      }
+      try {
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser();
+        if (error) throw error;
 
-      // Récupérer les données du profil
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
 
-      if (profileError) {
-        console.error(
-          "Erreur lors de la récupération du profil :",
-          profileError
-        );
-        return;
-      }
+        if (profileError) throw profileError;
 
-      // Pré-remplir les champs avec les données existantes
-      if (profile) {
-        setName(profile.name || "");
-        setEmail(profile.email || "");
-        setPhone(profile.phone || "");
-        setSelectedGender(profile.genre || null);
+        if (profile) {
+          setName(profile.name || "");
+          setEmail(profile.email || "");
+          setPhone(profile.phone || "");
+          setSelectedGender(profile.genre || null);
+          setProfileImage(profile.avatar_url || null);
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        setSnackbarMessage("Error fetching profile.");
+        setSnackbarType("error");
+        setSnackbarVisible(true);
       }
     };
 
@@ -69,61 +63,105 @@ const EditProfil = ({ goBack }) => {
 
   // Fonction pour ouvrir la galerie
   const openGallery = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      setSnackbarMessage("Permission d'accès à la galerie refusée.");
+    try {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        setSnackbarMessage("Gallery access permission denied.");
+        setSnackbarType("error");
+        setSnackbarVisible(true);
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 1,
+      });
+
+      if (!result.canceled && result.assets.length > 0) {
+        setProfileImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error("Error opening gallery:", error);
+      setSnackbarMessage("Error opening gallery.");
       setSnackbarType("error");
       setSnackbarVisible(true);
-      return;
     }
+  };
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 1,
-    });
+  // Téléverser l'image sur Supabase Storage
+  const uploadImage = async (uri, userId) => {
+    try {
+      const fileExt = uri.split(".").pop();
+      const fileName = `${userId}.${fileExt}`;
 
-    if (!result.canceled && result.assets.length > 0) {
-      setProfileImage(result.assets[0].uri); // Mettre l'URI de l'image dans le state
+      const { data, error } = await supabase.storage.from("avatars").upload(
+        fileName,
+        {
+          uri,
+          type: `image/${fileExt}`,
+          name: fileName,
+        },
+        {
+          cacheControl: "3600",
+          upsert: true,
+        }
+      );
+
+      if (error) throw error;
+
+      // Récupérer l'URL publique de l'image après upload
+      const { publicUrl, error: urlError } = await supabase.storage
+        .from("avatars")
+        .getPublicUrl(fileName);
+
+      if (urlError) throw urlError;
+
+      return publicUrl; // Retourner l'URL publique
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      throw error;
     }
   };
 
   // Fonction pour mettre à jour le profil
   const handleUpdateProfile = async () => {
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError) {
-      console.error(
-        "Erreur lors de la récupération de l'utilisateur :",
-        authError
-      );
-      setSnackbarMessage("Erreur lors de la récupération de l'utilisateur.");
-      setSnackbarType("error");
-      setSnackbarVisible(true);
-      return;
-    }
-
     try {
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+      if (authError) throw authError;
+
+      const genre = selectedGender === "female" ? "femme" : "homme";
+
+      let avatarUrl = profileImage;
+      if (profileImage && !profileImage.startsWith("http")) {
+        avatarUrl = await uploadImage(profileImage, user.id);
+      }
+
       const { data, error } = await supabase
         .from("profiles")
         .update({
           name,
           email,
           phone,
-          genre: selectedGender,
+          genre,
+          avatar_url: avatarUrl,
         })
         .eq("id", user.id);
 
       if (error) throw error;
 
-      setSnackbarMessage("Profil mis à jour avec succès !");
+      setSnackbarMessage("Profile updated successfully!");
       setSnackbarType("success");
       setSnackbarVisible(true);
+
+      if (onUpdateSuccess) onUpdateSuccess(name);
     } catch (error) {
-      console.error("Erreur lors de la mise à jour du profil :", error);
-      setSnackbarMessage("Erreur lors de la mise à jour du profil.");
+      console.error("Error updating profile:", error);
+      setSnackbarMessage("Error updating profile.");
       setSnackbarType("error");
       setSnackbarVisible(true);
     }
@@ -133,7 +171,7 @@ const EditProfil = ({ goBack }) => {
     <ScrollView contentContainerStyle={styles.container}>
       {/* En-tête */}
       <View style={styles.header}>
-        <Text style={styles.title}>Profil</Text>
+        <Text style={styles.title}>Profile</Text>
         <TouchableOpacity onPress={goBack}>
           <Icon name="times" size={30} color={Colors.vert5} />
         </TouchableOpacity>
@@ -199,35 +237,35 @@ const EditProfil = ({ goBack }) => {
             <TouchableOpacity
               style={[
                 styles.genderButton,
-                selectedGender === "homme" && styles.selectedButton,
+                selectedGender === "male" && styles.selectedButton,
               ]}
-              onPress={() => setSelectedGender("homme")}
+              onPress={() => setSelectedGender("male")}
             >
               <MaterialIcons
                 name="male"
                 size={20}
                 color={
-                  selectedGender === "homme" ? Colors.vert : Colors.grisclair
+                  selectedGender === "male" ? Colors.vert : Colors.grisclair
                 }
               />
-              <Text style={styles.genderText}>Homme</Text>
+              <Text style={styles.genderText}>Male</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[
                 styles.genderButton,
-                selectedGender === "femme" && styles.selectedButton,
+                selectedGender === "female" && styles.selectedButton,
               ]}
-              onPress={() => setSelectedGender("femme")}
+              onPress={() => setSelectedGender("female")}
             >
               <MaterialIcons
                 name="female"
                 size={20}
                 color={
-                  selectedGender === "femme" ? Colors.vert : Colors.grisclair
+                  selectedGender === "female" ? Colors.vert : Colors.grisclair
                 }
               />
-              <Text style={styles.genderText}>Femme</Text>
+              <Text style={styles.genderText}>Female</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -236,7 +274,7 @@ const EditProfil = ({ goBack }) => {
       {/* Bouton Valider */}
       <View style={styles.footer}>
         <TouchableOpacity style={styles.buttonOK} onPress={handleUpdateProfile}>
-          <Text style={styles.buttonText}>Valid</Text>
+          <Text style={styles.buttonText}>Save</Text>
           <MaterialIcons
             name="edit"
             size={20}
@@ -246,7 +284,7 @@ const EditProfil = ({ goBack }) => {
         </TouchableOpacity>
       </View>
 
-      {/* CustomSnackbar pour afficher les messages */}
+      {/* Snackbar pour afficher les messages */}
       <CustomSnackbar
         visible={snackbarVisible}
         message={snackbarMessage}
@@ -358,4 +396,5 @@ const styles = StyleSheet.create({
     marginLeft: 15,
   },
 });
+
 export default EditProfil;

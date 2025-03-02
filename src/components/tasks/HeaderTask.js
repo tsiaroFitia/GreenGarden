@@ -12,7 +12,7 @@ export default class HeaderTask extends Component {
       day: "numeric", // Day of the month (e.g., "11")
       month: "long", // Full name of the month (e.g., "May")
     };
-    const todayDateString = today.toLocaleDateString("en-GB", options); // Apply custom formatting
+    const todayDateString = today.toLocaleDateString("en-GB", options);
 
     return (
       <View style={styles.container}>
@@ -64,7 +64,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  iconButtonAddTask: {},
   texttitle: {
     fontSize: 22,
     fontWeight: "bold",

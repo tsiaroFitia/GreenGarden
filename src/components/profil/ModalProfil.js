@@ -1,13 +1,67 @@
-import React, { useState } from "react";
-import { Text, View, TouchableOpacity, StyleSheet, Modal } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  Text,
+  View,
+  TouchableOpacity,
+  StyleSheet,
+  Modal,
+  Image,
+} from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { useNavigation } from "@react-navigation/native";
+import { supabase } from "../../../supabase";
 import Colors from "../../outils/Colors";
 import EditProfil from "./EditProfil";
+import CustomSnackbar from "../CustomSnackBar";
 
 const ModalProfil = () => {
   const [showEditModal, setShowEditModal] = useState(false);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarType, setSnackbarType] = useState("success");
+  const [name, setName] = useState(""); // État pour stocker le nom
+  const [profileImage, setProfileImage] = useState(""); // État pour stocker l'image de profil
   const navigation = useNavigation();
+
+  // Récupérer les données du profil lors du montage du composant
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+      if (error) {
+        console.error(
+          "Erreur lors de la récupération de l'utilisateur :",
+          error
+        );
+        return;
+      }
+
+      // Récupérer les données du profil
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("name, avatar_url")
+        .eq("id", user.id)
+        .single();
+
+      if (profileError) {
+        console.error(
+          "Erreur lors de la récupération du profil :",
+          profileError
+        );
+        return;
+      }
+
+      // Mettre à jour l'état avec le nom de l'utilisateur et l'image de profil
+      if (profile) {
+        setName(profile.name || "Utilisateur"); // Valeur par défaut si le nom est vide
+        setProfileImage(profile.profile_image_url || ""); // Utilisez une URL par défaut ou vide si l'image n'existe pas
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const openEditModal = () => {
     setShowEditModal(true);
@@ -21,12 +75,29 @@ const ModalProfil = () => {
     navigation.navigate("SignInScreen");
   };
 
+  // Fonction de callback pour gérer la réussite de la mise à jour
+  const handleUpdateSuccess = (updatedName, updatedProfileImage) => {
+    setName(updatedName); // Mettre à jour le nom affiché
+    setProfileImage(updatedProfileImage); // Mettre à jour l'image de profil
+    closeEditModal(); // Fermer le modal
+    setSnackbarMessage("Profil mis à jour avec succès !"); // Message de succès
+    setSnackbarType("success"); // Type de message
+    setSnackbarVisible(true); // Afficher le Snackbar
+  };
+
   return (
     <View style={styles.container}>
       {/* Section Profil */}
       <View style={styles.profileSection}>
-        <View style={styles.photo}></View>
-        <Text style={styles.nameText}>Name</Text>
+        <View style={styles.photo}>
+          {/* Afficher l'image de profil */}
+          {profileImage ? (
+            <Image source={{ uri: profileImage }} style={styles.profileImage} />
+          ) : (
+            <Text style={styles.noImageText}>Pas d'image</Text> // Texte au cas où l'image est vide
+          )}
+        </View>
+        <Text style={styles.nameText}>{name}</Text>
       </View>
 
       {/* Boutons d'actions */}
@@ -54,10 +125,21 @@ const ModalProfil = () => {
       <Modal visible={showEditModal} transparent={true} animationType="slide">
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <EditProfil goBack={closeEditModal} />
+            <EditProfil
+              goBack={closeEditModal}
+              onUpdateSuccess={handleUpdateSuccess} // Passer la fonction de callback
+            />
           </View>
         </View>
       </Modal>
+
+      {/* Snackbar pour afficher les messages */}
+      <CustomSnackbar
+        visible={snackbarVisible}
+        message={snackbarMessage}
+        type={snackbarType}
+        onDismiss={() => setSnackbarVisible(false)}
+      />
     </View>
   );
 };
@@ -84,6 +166,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 3,
     borderColor: "white",
+  },
+  profileImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+  },
+  noImageText: {
+    color: "white",
+    fontSize: 16,
+    textAlign: "center",
   },
   nameText: {
     textAlign: "center",

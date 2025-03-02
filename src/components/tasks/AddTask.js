@@ -19,12 +19,12 @@ export default class AddTask extends Component {
     taskName: "",
   };
 
-  // Fonction pour afficher ou masquer le calendrier
+  // Function to show or hide the date picker
   showDatepicker = () => {
     this.setState({ showDatePicker: true });
   };
 
-  // Fonction pour gérer la date sélectionnée
+  // Function to handle the selected date
   onDateChange = (event, selectedDate) => {
     const currentDate = selectedDate || this.state.date;
     this.setState({
@@ -33,13 +33,13 @@ export default class AddTask extends Component {
     });
   };
 
-  // Fonction pour enregistrer la tâche dans Supabase
+  // Function to save the task to Supabase
   handleAddTask = async () => {
     const { taskName, date } = this.state;
     const { onAddTask, onClose } = this.props;
 
     if (!taskName.trim()) {
-      onAddTask("Veuillez entrer un nom de tâche.", "error");
+      onAddTask("Please enter a task name.", "error");
       return;
     }
 
@@ -54,17 +54,14 @@ export default class AddTask extends Component {
         throw error;
       }
 
-      // Notifier le parent de l'ajout réussi
-      onAddTask("Tâche ajoutée avec succès !", "success");
+      // Notify the parent of successful addition
+      onAddTask("Task added successfully!", "success");
 
-      // Fermer le modal
+      // Close the modal
       onClose();
     } catch (error) {
-      console.error("Erreur lors de l'ajout de la tâche :", error);
-      onAddTask(
-        "Une erreur est survenue lors de l'ajout de la tâche.",
-        "error"
-      );
+      console.error("Error adding task:", error);
+      onAddTask("An error occurred while adding the task.", "error");
     }
   };
 
@@ -81,7 +78,7 @@ export default class AddTask extends Component {
           </TouchableOpacity>
         </View>
 
-        {/* Contenu principal */}
+        {/* Main content */}
         <View style={styles.body}>
           <View style={styles.formGroup}>
             <Text>Name</Text>
@@ -113,7 +110,7 @@ export default class AddTask extends Component {
           </View>
         </View>
 
-        {/* Bouton d'ajout */}
+        {/* Add button */}
         <View style={styles.footer}>
           <TouchableOpacity onPress={this.handleAddTask}>
             <View style={styles.buttonAddTask}>
